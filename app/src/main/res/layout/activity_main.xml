@@ -7,8 +7,17 @@
     tools:context="com.wyb.gobang.MainActivity">
 
     <com.wyb.gobang.Gobang
+        android:id="@+id/id_gameView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true" />
+
+    <Button
+        android:id="@+id/id_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:background="#0000"
+        android:text="再来一局" />
 
 </RelativeLayout>

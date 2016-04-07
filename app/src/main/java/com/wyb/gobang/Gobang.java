@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,8 +29,8 @@ public class Gobang extends View {
     private float ratioPieceOfLineHeight = 3 * 1.0f / 4;
 
     private boolean isWhite = true;
-    private List<Point> whiteArray = new ArrayList<>();
-    private List<Point> blackArray = new ArrayList<>();
+    private ArrayList<Point> whiteArray = new ArrayList<>();
+    private ArrayList<Point> blackArray = new ArrayList<>();
 
     private boolean isGameOver;
     private boolean isWhiteWinner;
@@ -37,7 +39,7 @@ public class Gobang extends View {
 
     public Gobang(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setBackgroundColor(0x44ff0000);
+//        setBackgroundColor(0x44ff0000);  //用颜色让自定义View更直观-->用于测试
         init();
     }
 
@@ -157,13 +159,13 @@ public class Gobang extends View {
             int x = p.x;
             int y = p.y;
             boolean win = checkHorizontal(x, y, points);  //横向五连
-            if(win) return true;
+            if (win) return true;
             win = checkVertical(x, y, points);  //纵向五连
-            if(win) return true;
+            if (win) return true;
             win = checkLeftDiagonal(x, y, points);  //斜向五连
-            if(win) return true;
+            if (win) return true;
             win = checkRightDiagonal(x, y, points);  //斜向五连
-            if(win) return true;
+            if (win) return true;
         }
         return false;
     }
@@ -270,6 +272,44 @@ public class Gobang extends View {
         if (count == MAX_COUNT_IN_LINE) return true;
 
         return false;
+    }
+
+    //自定义View的存储
+    private static final String INSTANCE = "instance";
+    private static final String INSTANCE_GAME_OVER = "instanceGameOver";
+    private static final String INSTANCE_WHITE_ARRAY = "instanceWhiteArray";
+    private static final String INSTANCE_BLACK_ARRAY = "instanceBlackArray";
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(INSTANCE, super.onSaveInstanceState());
+        bundle.putBoolean(INSTANCE_GAME_OVER, isGameOver);
+        bundle.putParcelableArrayList(INSTANCE_WHITE_ARRAY, whiteArray);
+        bundle.putParcelableArrayList(INSTANCE_BLACK_ARRAY, blackArray);
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof Bundle) {
+            Bundle bundle = (Bundle) state;
+            isGameOver = bundle.getBoolean(INSTANCE_GAME_OVER);
+            whiteArray = bundle.getParcelableArrayList(INSTANCE_WHITE_ARRAY);
+            blackArray = bundle.getParcelableArrayList(INSTANCE_BLACK_ARRAY);
+            super.onRestoreInstanceState(bundle.getParcelable(INSTANCE));
+            return;
+        }
+        super.onRestoreInstanceState(state);
+    }
+
+    //再来一局
+    public void playAgain() {
+        whiteArray.clear();
+        blackArray.clear();
+        isGameOver = false;
+        isWhiteWinner = false;
+        invalidate();
     }
 
 }
