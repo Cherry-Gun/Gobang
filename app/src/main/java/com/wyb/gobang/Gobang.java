@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,11 @@ public class Gobang extends View {
     private boolean isWhite = true;
     private List<Point> whiteArray = new ArrayList<>();
     private List<Point> blackArray = new ArrayList<>();
+
+    private boolean isGameOver;
+    private boolean isWhiteWinner;
+
+    private int MAX_COUNT_IN_LINE = 5;
 
     public Gobang(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -80,6 +86,7 @@ public class Gobang extends View {
         super.onDraw(canvas);
         drawBoard(canvas);
         drawPiece(canvas);
+        checkGameOver();
     }
 
     //绘制棋盘
@@ -109,6 +116,7 @@ public class Gobang extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isGameOver) return false;
         if (event.getAction() == MotionEvent.ACTION_UP) {
             int x = (int) event.getX();
             int y = (int) event.getY();
@@ -132,4 +140,136 @@ public class Gobang extends View {
     private Point getValidPoint(int x, int y) {
         return new Point((int) (x / mLineHeight), (int) (y / mLineHeight));
     }
+
+    private void checkGameOver() {
+        boolean whiteWin = checkFiveInLine(whiteArray);
+        boolean blackWin = checkFiveInLine(blackArray);
+        if (whiteWin || blackWin) {
+            isGameOver = true;
+            isWhiteWinner = whiteWin;
+            String text = isWhiteWinner ? "白棋胜利" : "黑棋胜利";
+            Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean checkFiveInLine(List<Point> points) {
+        for (Point p : points) {
+            int x = p.x;
+            int y = p.y;
+            boolean win = checkHorizontal(x, y, points);  //横向五连
+            if(win) return true;
+            win = checkVertical(x, y, points);  //纵向五连
+            if(win) return true;
+            win = checkLeftDiagonal(x, y, points);  //斜向五连
+            if(win) return true;
+            win = checkRightDiagonal(x, y, points);  //斜向五连
+            if(win) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断x, y位置的棋子是否有相邻的五个一致
+     *
+     * @param x
+     * @param y
+     * @param points
+     * @return
+     */
+    private boolean checkHorizontal(int x, int y, List<Point> points) {
+        int count = 1;
+        //左
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x - i, y))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+        //右
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x + i, y))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+
+        return false;
+    }
+
+    private boolean checkVertical(int x, int y, List<Point> points) {
+        int count = 1;
+        //上
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x, y - i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+        //下
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x, y + i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+
+        return false;
+    }
+
+    private boolean checkLeftDiagonal(int x, int y, List<Point> points) {
+        int count = 1;
+        //左下
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x - i, y + i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+        //右上
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x + i, y - i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+
+        return false;
+    }
+
+    private boolean checkRightDiagonal(int x, int y, List<Point> points) {
+        int count = 1;
+        //左上
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x - i, y - i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+        //右下
+        for (int i = 1; i < MAX_COUNT_IN_LINE; i++) {
+            if (points.contains(new Point(x + i, y + i))) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == MAX_COUNT_IN_LINE) return true;
+
+        return false;
+    }
+
 }
